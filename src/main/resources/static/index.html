@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Human Digital Twin | Simulation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: rgba(148, 163, 184, 0.1);
+            --gradient-1: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-image:
+                radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(168, 85, 247, 0.15) 0%, transparent 20%);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            margin: 2rem;
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: var(--glass-shadow);
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 600;
+        }
+
+        h2 {
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-main);
+            font-weight: 400;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+            font-size: 0.9rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 0.8rem;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-main);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+        }
+
+        button {
+            width: 100%;
+            padding: 1rem;
+            background: var(--gradient-1);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .result-section {
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.5s ease;
+            pointer-events: none;
+        }
+
+        .result-section.active {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: all;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .metric-card {
+            background: rgba(15, 23, 42, 0.4);
+            padding: 1rem;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .metric-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 0.3rem;
+        }
+
+        .metric-value {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .risk-alert {
+            background: rgba(239, 68, 68, 0.1);
+            border-left: 4px solid #ef4444;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            border-radius: 0 10px 10px 0;
+        }
+
+        .insights-list {
+            margin-bottom: 1.5rem;
+            list-style: none;
+        }
+
+        .insights-list li {
+            position: relative;
+            padding-left: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .insights-list li::before {
+            content: "•";
+            color: var(--primary);
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        th {
+            text-align: left;
+            color: var(--text-muted);
+            padding: 0.8rem 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        td {
+            padding: 0.8rem 0.5rem;
+            color: var(--text-main);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .loading {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 20px;
+            backdrop-filter: blur(4px);
+            z-index: 10;
+            display: none;
+        }
+
+        .loader {
+            width: 48px;
+            height: 48px;
+            border: 5px solid #FFF;
+            border-bottom-color: transparent;
+            border-radius: 50%;
+            animation: rotation 1s linear infinite;
+        }
+
+        @keyframes rotation {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="card intro-card">
+            <h1>Human Digital Twin</h1>
+            <p class="subtitle">Simulate human behavior dynamics and forecast potential risks.</p>
+
+            <form id="simForm">
+                <div class="form-group">
+                    <label for="sleepHours">Daily Sleep (Hours)</label>
+                    <input type="number" id="sleepHours" value="7.0" step="0.5" min="0" max="24" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="workHours">Daily Work (Hours)</label>
+                    <input type="number" id="workHours" value="8.0" step="0.5" min="0" max="24" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="stressLevel">Current Stress (1-10)</label>
+                    <input type="number" id="stressLevel" value="5" min="1" max="10" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="activityLevel">Activity Level</label>
+                    <select id="activityLevel">
+                        <option value="LOW">Low</option>
+                        <option value="MEDIUM" selected>Medium</option>
+                        <option value="HIGH">High</option>
+                    </select>
+                </div>
+
+                <button type="submit">Run Simulation</button>
+            </form>
+        </div>
+
+        <div class="card result-card">
+            <div class="loading" id="loadingOverlay">
+                <span class="loader"></span>
+            </div>
+
+            <div id="welcomeMessage" style="text-align: center; color: var(--text-muted); padding-top: 5rem;">
+                <h3>Ready for Analysis</h3>
+                <p>Enter parameters and run simulation to view insights.</p>
+            </div>
+
+            <div id="results" class="result-section">
+                <h2>Analysis Report</h2>
+
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-label">Energy</div>
+                        <div class="metric-value" id="resEnergy">-</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Stress</div>
+                        <div class="metric-value" id="resStress">-</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Focus</div>
+                        <div class="metric-value" id="resFocus">-</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Recovery Debt</div>
+                        <div class="metric-value" id="resDebt">-</div>
+                    </div>
+                </div>
+
+                <div class="risk-alert" id="riskSection">
+                    <strong>Projected Risk:</strong> <span id="resRiskSummary">None</span>
+                </div>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <h3 style="font-size: 1rem; color: var(--text-main); margin-bottom: 0.5rem;">AI Insights</h3>
+                    <ul class="insights-list" id="resInsights"></ul>
+                </div>
+
+                <div>
+                    <h3 style="font-size: 1rem; color: var(--text-main); margin-bottom: 0.5rem;">5-Day Trajectory</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Day</th>
+                                <th>Energy</th>
+                                <th>Stress</th>
+                                <th>Burnout Risk</th>
+                            </tr>
+                        </thead>
+                        <tbody id="trajectoryBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('simForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const loader = document.getElementById('loadingOverlay');
+            const welcome = document.getElementById('welcomeMessage');
+            const results = document.getElementById('results');
+
+            loader.style.display = 'flex';
+
+            const payload = {
+                sleepHours: parseFloat(document.getElementById('sleepHours').value),
+                workHours: parseFloat(document.getElementById('workHours').value),
+                stressLevel: parseInt(document.getElementById('stressLevel').value),
+                activityLevel: document.getElementById('activityLevel').value
+            };
+
+            try {
+                const response = await fetch('/simulate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) throw new Error('Simulation failed');
+
+                const data = await response.json();
+                renderResults(data);
+
+                if (welcome) welcome.style.display = 'none';
+                results.classList.add('active');
+
+            } catch (error) {
+                alert('Error running simulation: ' + error.message);
+            } finally {
+                loader.style.display = 'none';
+            }
+        });
+
+        function renderResults(data) {
+            // Current State
+            const current = data.currentState;
+            document.getElementById('resEnergy').textContent = current.energy.toFixed(1);
+            document.getElementById('resStress').textContent = current.stress.toFixed(1);
+            document.getElementById('resFocus').textContent = current.focus.toFixed(1);
+            document.getElementById('resDebt').textContent = current.recoveryDebt.toFixed(1);
+
+            // Risk
+            document.getElementById('resRiskSummary').textContent = data.riskSummary;
+
+            // Insights
+            const insightsList = document.getElementById('resInsights');
+            insightsList.innerHTML = '';
+            // Insights is a single string, maybe split by sentences if possible, or just display as one item
+            const insightsStr = data.insights || '';
+            if (insightsStr) {
+                const li = document.createElement('li');
+                li.textContent = insightsStr;
+                insightsList.appendChild(li);
+            }
+
+            // Trajectory
+            const tbody = document.getElementById('trajectoryBody');
+            tbody.innerHTML = '';
+            data.futureTrajectory.forEach(day => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                <td>Day ${day.day}</td>
+                <td>${day.energy.toFixed(1)}</td>
+                <td>${day.stress.toFixed(1)}</td>
+                <td style="color: ${day.burnoutRisk > 0.7 ? '#ef4444' : '#10b981'}">
+                    ${(day.burnoutRisk * 100).toFixed(0)}%
+                </td>
+            `;
+                tbody.appendChild(tr);
+            });
+        }
+    </script>
+
+</body>
+
+</html>
