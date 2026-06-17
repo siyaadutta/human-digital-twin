@@ -1,446 +1,616 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Human Digital Twin | Simulation</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <title>Human Digital Twin | Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#3b82f6',
+                        secondary: '#10b981',
+                        accent: '#8b5cf6',
+                    },
+                    animation: {
+                        'gradient-x': 'gradient-x 15s ease infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-core': 'pulse-core 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'shimmer': 'shimmer 2s linear infinite',
+                    },
+                    keyframes: {
+                        'gradient-x': {
+                            '0%, 100%': { 'background-size': '200% 200%', 'background-position': 'left center' },
+                            '50%': { 'background-size': '200% 200%', 'background-position': 'right center' }
+                        },
+                        'float': {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        },
+                        'pulse-core': {
+                            '0%, 100%': { transform: 'scale(1)', opacity: '0.8' },
+                            '50%': { transform: 'scale(1.05)', opacity: '1' },
+                        },
+                        'shimmer': {
+                            'from': { backgroundPosition: '200% 0' },
+                            'to': { backgroundPosition: '-200% 0' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root {
-            --bg-color: #0f172a;
-            --card-bg: rgba(30, 41, 59, 0.7);
-            --primary: #6366f1;
-            --primary-hover: #4f46e5;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --border-color: rgba(148, 163, 184, 0.1);
-            --gradient-1: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
-            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        body { 
+            font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; 
+            transition: background-color 0.5s ease, color 0.5s ease;
+        }
+        
+        /* Premium Glassmorphism */
+        .glass { 
+            background: rgba(255, 255, 255, 0.7); 
+            backdrop-filter: blur(24px); 
+            -webkit-backdrop-filter: blur(24px); 
+            border: 1px solid rgba(255, 255, 255, 0.8); 
+            box-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.05);
+        }
+        .dark .glass { 
+            background: rgba(30, 41, 59, 0.6); 
+            backdrop-filter: blur(24px); 
+            border: 1px solid rgba(255, 255, 255, 0.08); 
+            box-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.4);
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Outfit', sans-serif;
+        /* Springy Animations */
+        .bouncy-hover {
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .bouncy-hover:hover {
+            transform: translateY(-4px) scale(1.01);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .dark .bouncy-hover:hover {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
         }
 
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-image:
-                radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 20%),
-                radial-gradient(circle at 90% 80%, rgba(168, 85, 247, 0.15) 0%, transparent 20%);
+        /* Inputs */
+        .input-glass {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(0,0,0,0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-
-        .container {
-            width: 100%;
-            max-width: 1000px;
-            margin: 2rem;
-            display: grid;
-            grid-template-columns: 1fr 1.5fr;
-            gap: 2rem;
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .card {
-            background: var(--card-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
-            padding: 2rem;
-            box-shadow: var(--glass-shadow);
-        }
-
-        h1 {
-            font-size: 1.8rem;
-            margin-bottom: 0.5rem;
-            background: var(--gradient-1);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-weight: 600;
-        }
-
-        h2 {
-            font-size: 1.2rem;
-            margin-bottom: 1.5rem;
-            color: var(--text-main);
-            font-weight: 400;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 0.5rem;
-        }
-
-        .subtitle {
-            color: var(--text-muted);
-            margin-bottom: 2rem;
-            font-size: 0.9rem;
-        }
-
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: var(--text-muted);
-            font-size: 0.9rem;
-        }
-
-        input,
-        select {
-            width: 100%;
-            padding: 0.8rem;
-            background: rgba(15, 23, 42, 0.6);
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            color: var(--text-main);
-            font-size: 1rem;
-            transition: all 0.3s ease;
-        }
-
-        input:focus,
-        select:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
-        }
-
-        button {
-            width: 100%;
-            padding: 1rem;
-            background: var(--gradient-1);
-            border: none;
-            border-radius: 10px;
-            color: white;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
-        }
-
-        button:active {
-            transform: translateY(0);
-        }
-
-        .result-section {
-            opacity: 0;
-            transform: translateY(10px);
-            transition: all 0.5s ease;
-            pointer-events: none;
-        }
-
-        .result-section.active {
-            opacity: 1;
-            transform: translateY(0);
-            pointer-events: all;
-        }
-
-        .metrics-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
-
-        .metric-card {
-            background: rgba(15, 23, 42, 0.4);
-            padding: 1rem;
-            border-radius: 12px;
-            border: 1px solid var(--border-color);
-        }
-
-        .metric-label {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            margin-bottom: 0.3rem;
-        }
-
-        .metric-value {
-            font-size: 1.2rem;
-            font-weight: 600;
-            color: var(--primary);
-        }
-
-        .risk-alert {
-            background: rgba(239, 68, 68, 0.1);
-            border-left: 4px solid #ef4444;
-            padding: 1rem;
-            margin-bottom: 1.5rem;
-            border-radius: 0 10px 10px 0;
-        }
-
-        .insights-list {
-            margin-bottom: 1.5rem;
-            list-style: none;
-        }
-
-        .insights-list li {
-            position: relative;
-            padding-left: 1.5rem;
-            margin-bottom: 0.5rem;
-            color: var(--text-muted);
-            font-size: 0.95rem;
-        }
-
-        .insights-list li::before {
-            content: "•";
-            color: var(--primary);
-            position: absolute;
-            left: 0;
-            font-weight: bold;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.9rem;
-        }
-
-        th {
-            text-align: left;
-            color: var(--text-muted);
-            padding: 0.8rem 0.5rem;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        td {
-            padding: 0.8rem 0.5rem;
-            color: var(--text-main);
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        tr:last-child td {
-            border-bottom: none;
-        }
-
-        .loading {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+        .dark .input-glass {
             background: rgba(15, 23, 42, 0.8);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            border-radius: 20px;
-            backdrop-filter: blur(4px);
-            z-index: 10;
-            display: none;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #f1f5f9;
+        }
+        .input-glass:focus {
+            background: #ffffff;
+            border-color: #3b82f6;
+            transform: scale(1.01);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+            outline: none;
+        }
+        .dark .input-glass:focus {
+            background: #0f172a;
+            border-color: #8b5cf6;
+            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.2);
+        }
+        
+        /* Select Dropdown Fix */
+        select option {
+            background-color: #ffffff;
+            color: #0f172a;
+        }
+        .dark select option {
+            background-color: #1e293b;
+            color: #f1f5f9;
         }
 
-        .loader {
-            width: 48px;
-            height: 48px;
-            border: 5px solid #FFF;
-            border-bottom-color: transparent;
+        /* Range Slider */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 20px; width: 20px;
             border-radius: 50%;
-            animation: rotation 1s linear infinite;
+            background: #3b82f6;
+            cursor: pointer;
+            margin-top: -8px;
+            box-shadow: 0 2px 6px rgba(59,130,246,0.4);
+            transition: transform 0.2s;
         }
-
-        @keyframes rotation {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
+        input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+        .dark input[type=range]::-webkit-slider-thumb { background: #8b5cf6; box-shadow: 0 2px 6px rgba(139,92,246,0.4); }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%; height: 6px;
+            cursor: pointer;
+            background: #e2e8f0;
+            border-radius: 3px;
         }
+        .dark input[type=range]::-webkit-slider-runnable-track { background: #334155; }
+
+        /* Shimmer Loading */
+        .shimmer-bg {
+            background: linear-gradient(90deg, 
+                rgba(255,255,255,0) 0%, 
+                rgba(255,255,255,0.4) 50%, 
+                rgba(255,255,255,0) 100%);
+            background-size: 200% 100%;
+            animation: shimmer 2s infinite;
+        }
+        .dark .shimmer-bg {
+            background: linear-gradient(90deg, 
+                rgba(255,255,255,0) 0%, 
+                rgba(255,255,255,0.1) 50%, 
+                rgba(255,255,255,0) 100%);
+            background-size: 200% 100%;
+            animation: shimmer 2s infinite;
+        }
+        
+        /* Energy Core */
+        .core-healthy { box-shadow: 0 0 40px 10px rgba(16, 185, 129, 0.4); background: radial-gradient(circle, #34d399 0%, #059669 100%); }
+        .core-warning { box-shadow: 0 0 40px 10px rgba(245, 158, 11, 0.4); background: radial-gradient(circle, #fbbf24 0%, #d97706 100%); }
+        .core-danger { box-shadow: 0 0 40px 10px rgba(239, 68, 68, 0.4); background: radial-gradient(circle, #f87171 0%, #dc2626 100%); }
     </style>
 </head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen pb-12 overflow-x-hidden">
+    
+    <!-- Ambient Background Blobs -->
+    <div class="fixed inset-0 overflow-hidden -z-10 pointer-events-none">
+        <div class="absolute top-[-15%] left-[-10%] w-[50%] h-[50%] rounded-full bg-blue-300/30 dark:bg-blue-900/20 blur-[120px]"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full bg-purple-300/30 dark:bg-purple-900/20 blur-[150px]"></div>
+    </div>
 
-<body>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 pt-8">
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-10">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                </div>
+                <h1 class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Digital Twin</h1>
+            </div>
+            <div class="flex items-center space-x-4">
+                <button onclick="clearData()" class="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-red-500 transition-colors">Reset Data</button>
+                <button onclick="toggleTheme()" class="p-2.5 rounded-xl glass hover:bg-white/50 dark:hover:bg-slate-800/50 transition-all">
+                    <svg id="themeIcon" class="w-5 h-5 text-slate-700 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                </button>
+            </div>
+        </header>
 
-    <div class="container">
-        <div class="card intro-card">
-            <h1>Human Digital Twin</h1>
-            <p class="subtitle">Simulate human behavior dynamics and forecast potential risks.</p>
-
-            <form id="simForm">
-                <div class="form-group">
-                    <label for="sleepHours">Daily Sleep (Hours)</label>
-                    <input type="number" id="sleepHours" value="7.0" step="0.5" min="0" max="24" required>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- Left Sidebar: Form & Core -->
+            <div class="lg:col-span-4 space-y-6">
+                <!-- Visual Metaphor: Energy Core -->
+                <div class="glass p-8 rounded-3xl flex flex-col items-center justify-center text-center relative overflow-hidden">
+                    <h3 class="text-sm font-semibold tracking-wider text-slate-500 dark:text-slate-400 uppercase mb-8">System Core</h3>
+                    <div class="relative w-32 h-32 flex items-center justify-center">
+                        <div id="coreAura" class="absolute inset-0 rounded-full animate-pulse-core core-healthy opacity-80"></div>
+                        <div class="absolute inset-2 bg-white dark:bg-slate-800 rounded-full z-10 shadow-inner flex items-center justify-center">
+                            <span id="coreText" class="text-2xl font-bold text-slate-800 dark:text-white">100%</span>
+                        </div>
+                    </div>
+                    <p id="coreStatus" class="mt-8 text-sm font-medium text-slate-600 dark:text-slate-300">Awaiting Data...</p>
                 </div>
 
-                <div class="form-group">
-                    <label for="workHours">Daily Work (Hours)</label>
-                    <input type="number" id="workHours" value="8.0" step="0.5" min="0" max="24" required>
+                <!-- Daily Input Form -->
+                <div class="bouncy-hover glass p-8 rounded-3xl">
+                    <h2 class="text-xl font-bold mb-6 text-slate-900 dark:text-white">Daily Sync</h2>
+                    <form id="logForm" onsubmit="submitLog(event)" class="space-y-5">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1.5">Sleep (Hours)</label>
+                            <input type="number" id="sleep" step="0.5" value="7.5" required class="input-glass w-full px-4 py-2.5 rounded-xl text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1.5">Work (Hours)</label>
+                            <input type="number" id="work" step="0.5" value="8" required class="input-glass w-full px-4 py-2.5 rounded-xl text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1.5">Stress (1-10)</label>
+                            <input type="number" id="stress" value="4" min="1" max="10" required class="input-glass w-full px-4 py-2.5 rounded-xl text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1.5">Activity Level</label>
+                            <select id="activity" class="input-glass w-full px-4 py-2.5 rounded-xl text-sm appearance-none">
+                                <option value="LOW">Low</option>
+                                <option value="MEDIUM" selected>Medium</option>
+                                <option value="HIGH">High</option>
+                            </select>
+                        </div>
+                        <button type="submit" id="submitBtn" class="w-full mt-2 py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-semibold rounded-xl shadow-md hover:bg-slate-800 dark:hover:bg-slate-100 transition-colors relative overflow-hidden group">
+                            <span id="btnText" class="relative z-10 flex items-center justify-center">
+                                Sync to Twin
+                            </span>
+                            <div id="loadingOverlay" class="absolute inset-0 bg-slate-800 dark:bg-slate-200 shimmer-bg hidden z-0"></div>
+                        </button>
+                    </form>
                 </div>
-
-                <div class="form-group">
-                    <label for="stressLevel">Current Stress (1-10)</label>
-                    <input type="number" id="stressLevel" value="5" min="1" max="10" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="activityLevel">Activity Level</label>
-                    <select id="activityLevel">
-                        <option value="LOW">Low</option>
-                        <option value="MEDIUM" selected>Medium</option>
-                        <option value="HIGH">High</option>
-                    </select>
-                </div>
-
-                <button type="submit">Run Simulation</button>
-            </form>
-        </div>
-
-        <div class="card result-card">
-            <div class="loading" id="loadingOverlay">
-                <span class="loader"></span>
             </div>
 
-            <div id="welcomeMessage" style="text-align: center; color: var(--text-muted); padding-top: 5rem;">
-                <h3>Ready for Analysis</h3>
-                <p>Enter parameters and run simulation to view insights.</p>
-            </div>
-
-            <div id="results" class="result-section">
-                <h2>Analysis Report</h2>
-
-                <div class="metrics-grid">
-                    <div class="metric-card">
-                        <div class="metric-label">Energy</div>
-                        <div class="metric-value" id="resEnergy">-</div>
+            <!-- Main Content Area -->
+            <div class="lg:col-span-8 flex flex-col space-y-6">
+                
+                <!-- Glanceable Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="glass p-6 rounded-3xl bouncy-hover flex flex-col">
+                        <span class="text-sm font-medium text-slate-500 dark:text-slate-400">Energy</span>
+                        <div class="mt-2 flex items-baseline space-x-2">
+                            <span id="cardEnergy" class="text-3xl font-bold text-slate-900 dark:text-white">--</span>
+                        </div>
                     </div>
-                    <div class="metric-card">
-                        <div class="metric-label">Stress</div>
-                        <div class="metric-value" id="resStress">-</div>
+                    <div class="glass p-6 rounded-3xl bouncy-hover flex flex-col">
+                        <span class="text-sm font-medium text-slate-500 dark:text-slate-400">Stress Load</span>
+                        <div class="mt-2 flex items-baseline space-x-2">
+                            <span id="cardStress" class="text-3xl font-bold text-slate-900 dark:text-white">--</span>
+                        </div>
                     </div>
-                    <div class="metric-card">
-                        <div class="metric-label">Focus</div>
-                        <div class="metric-value" id="resFocus">-</div>
-                    </div>
-                    <div class="metric-card">
-                        <div class="metric-label">Recovery Debt</div>
-                        <div class="metric-value" id="resDebt">-</div>
+                    <div class="glass p-6 rounded-3xl bouncy-hover flex flex-col">
+                        <span class="text-sm font-medium text-slate-500 dark:text-slate-400">Focus Index</span>
+                        <div class="mt-2 flex items-baseline space-x-2">
+                            <span id="cardFocus" class="text-3xl font-bold text-slate-900 dark:text-white">--</span>
+                        </div>
                     </div>
                 </div>
 
-                <div class="risk-alert" id="riskSection">
-                    <strong>Projected Risk:</strong> <span id="resRiskSummary">None</span>
+                <!-- Predictive Chart -->
+                <div class="glass p-6 sm:p-8 rounded-3xl flex-grow flex flex-col min-h-[350px]">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-bold text-slate-900 dark:text-white">Predictive Trajectory</h2>
+                        <span class="px-3 py-1 text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 rounded-full">5-Day Forecast</span>
+                    </div>
+                    <div class="relative flex-grow w-full">
+                        <canvas id="trendChart"></canvas>
+                    </div>
                 </div>
 
-                <div style="margin-bottom: 1.5rem;">
-                    <h3 style="font-size: 1rem; color: var(--text-main); margin-bottom: 0.5rem;">AI Insights</h3>
-                    <ul class="insights-list" id="resInsights"></ul>
-                </div>
+                <!-- AI Insights & What-If Simulator -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- AI Insights -->
+                    <div id="aiCoachBox" class="glass p-6 rounded-3xl transition-all duration-700 ease-out">
+                        <div class="flex items-center mb-4 space-x-3">
+                            <div class="w-8 h-8 rounded-full bg-pink-100 dark:bg-pink-900/40 flex items-center justify-center">
+                                <svg class="w-4 h-4 text-pink-600 dark:text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                            </div>
+                            <h3 class="text-sm font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 truncate">AI Analysis</h3>
+                        </div>
+                        <div id="aiPlaceholder" class="flex flex-col items-center justify-center py-10 text-slate-400 dark:text-slate-500">
+                            <svg class="w-10 h-10 mb-2 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+                            <p class="text-xs font-medium">Waiting for daily sync...</p>
+                        </div>
+                        <div id="aiContent" class="hidden opacity-0">
+                            <p class="text-xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600 dark:from-purple-400 dark:to-pink-400 mb-4 leading-tight break-words" id="aiDecision"></p>
+                            <ul id="aiReasoning" class="space-y-3 text-sm text-slate-600 dark:text-slate-300"></ul>
+                        </div>
+                    </div>
 
-                <div>
-                    <h3 style="font-size: 1rem; color: var(--text-main); margin-bottom: 0.5rem;">5-Day Trajectory</h3>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Day</th>
-                                <th>Energy</th>
-                                <th>Stress</th>
-                                <th>Burnout Risk</th>
-                            </tr>
-                        </thead>
-                        <tbody id="trajectoryBody"></tbody>
-                    </table>
+                    <!-- What-If Simulator -->
+                    <div class="glass p-6 rounded-3xl bouncy-hover">
+                        <div class="flex items-center mb-4 space-x-3">
+                            <div class="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center">
+                                <svg class="w-4 h-4 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                            </div>
+                            <h3 class="text-sm font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 truncate">Scenario Simulator</h3>
+                        </div>
+                        <div class="space-y-5 mt-4">
+                            <div>
+                                <div class="flex justify-between text-xs font-medium text-slate-500 dark:text-slate-300 mb-2">
+                                    <span>Hypothetical Sleep</span>
+                                    <span id="simSleepVal">8h</span>
+                                </div>
+                                <input type="range" id="simSleep" min="2" max="12" step="0.5" value="8" oninput="document.getElementById('simSleepVal').innerText = this.value + 'h'">
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-xs font-medium text-slate-500 dark:text-slate-300 mb-2">
+                                    <span>Hypothetical Work</span>
+                                    <span id="simWorkVal">8h</span>
+                                </div>
+                                <input type="range" id="simWork" min="0" max="16" step="0.5" value="8" oninput="document.getElementById('simWorkVal').innerText = this.value + 'h'">
+                            </div>
+                            <button onclick="runSimulation()" id="simBtn" class="w-full py-2.5 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 font-medium rounded-xl hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors text-sm">
+                                Simulate Trajectory
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        document.getElementById('simForm').addEventListener('submit', async (e) => {
+        let chartInstance = null;
+        let currentLogs = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+            loadHistory();
+        });
+
+        function toggleTheme() {
+            document.documentElement.classList.toggle('dark');
+            localStorage.theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+            if (currentLogs.length > 0) renderChart(currentLogs); // re-render to sync colors
+        }
+
+        function updateCore(energy, stress) {
+            const coreAura = document.getElementById('coreAura');
+            const coreText = document.getElementById('coreText');
+            const coreStatus = document.getElementById('coreStatus');
+            
+            coreAura.className = 'absolute inset-0 rounded-full animate-pulse-core opacity-80 transition-all duration-1000 ';
+            coreText.innerText = Math.round(energy) + '%';
+
+            if (energy > 70 && stress < 50) {
+                coreAura.classList.add('core-healthy');
+                coreStatus.innerText = "Optimal State";
+                coreStatus.className = "mt-8 text-sm font-medium text-emerald-600 dark:text-emerald-400";
+            } else if (energy < 40 || stress > 70) {
+                coreAura.classList.add('core-danger');
+                coreStatus.innerText = "Critical State";
+                coreStatus.className = "mt-8 text-sm font-medium text-red-600 dark:text-red-400";
+            } else {
+                coreAura.classList.add('core-warning');
+                coreStatus.innerText = "Stressed State";
+                coreStatus.className = "mt-8 text-sm font-medium text-amber-600 dark:text-amber-400";
+            }
+        }
+
+        function updateCards(state) {
+            document.getElementById('cardEnergy').innerText = state.energy.toFixed(1);
+            document.getElementById('cardStress').innerText = state.stress.toFixed(1);
+            document.getElementById('cardFocus').innerText = state.focus.toFixed(1);
+            updateCore(state.energy, state.stress);
+        }
+
+        async function loadHistory() {
+            try {
+                const res = await fetch('/api/logs/history');
+                if(res.ok) {
+                    const logs = await res.json();
+                    if(logs && logs.length > 0) {
+                        const latest = logs[0];
+                        updateCards({ energy: latest.calculatedEnergy, stress: latest.stressLevel*10, focus: latest.calculatedFocus || 80 });
+                        currentLogs = logs;
+                        renderChart(logs);
+                    } else {
+                        resetDashboard();
+                    }
+                }
+            } catch (err) {
+                console.error("Failed to load history", err);
+            }
+        }
+
+        function resetDashboard() {
+            currentLogs = [];
+            // Clear Cards
+            document.getElementById('cardEnergy').innerText = '--';
+            document.getElementById('cardStress').innerText = '--';
+            document.getElementById('cardFocus').innerText = '--';
+            // Reset Core
+            document.getElementById('coreText').innerText = '—';
+            document.getElementById('coreStatus').innerText = 'Awaiting Data...';
+            document.getElementById('coreStatus').className = 'mt-8 text-sm font-medium text-slate-600 dark:text-slate-300';
+            const coreAura = document.getElementById('coreAura');
+            coreAura.className = 'absolute inset-0 rounded-full animate-pulse-core opacity-40 core-healthy';
+            
+            // Reset AI Box
+            document.getElementById('aiPlaceholder').classList.remove('hidden');
+            document.getElementById('aiContent').classList.add('hidden', 'opacity-0');
+            
+            // Reset Inputs to defaults
+            document.getElementById('sleep').value = 7.5;
+            document.getElementById('work').value = 8;
+            document.getElementById('stress').value = 4;
+            document.getElementById('activity').value = 'MEDIUM';
+            // Clear Chart
+            if(chartInstance) { chartInstance.destroy(); chartInstance = null; }
+        }
+
+        function setBtnLoading(btnId, overlayId, textId, isLoading) {
+            const btn = document.getElementById(btnId);
+            const overlay = document.getElementById(overlayId);
+            const text = document.getElementById(textId);
+            if(isLoading) {
+                btn.disabled = true;
+                overlay.classList.remove('hidden');
+                text.innerText = "Processing...";
+                text.classList.add('text-transparent'); // Hide text, show shimmer
+            } else {
+                btn.disabled = false;
+                overlay.classList.add('hidden');
+                text.classList.remove('text-transparent');
+            }
+        }
+
+        async function submitLog(e) {
             e.preventDefault();
-
-            const loader = document.getElementById('loadingOverlay');
-            const welcome = document.getElementById('welcomeMessage');
-            const results = document.getElementById('results');
-
-            loader.style.display = 'flex';
+            setBtnLoading('submitBtn', 'loadingOverlay', 'btnText', true);
 
             const payload = {
-                sleepHours: parseFloat(document.getElementById('sleepHours').value),
-                workHours: parseFloat(document.getElementById('workHours').value),
-                stressLevel: parseInt(document.getElementById('stressLevel').value),
-                activityLevel: document.getElementById('activityLevel').value
+                sleepHours: document.getElementById('sleep').value,
+                workHours: document.getElementById('work').value,
+                stressLevel: document.getElementById('stress').value,
+                activityLevel: document.getElementById('activity').value
             };
 
             try {
-                const response = await fetch('/simulate', {
+                const res = await fetch('/api/logs', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify(payload)
                 });
-
-                if (!response.ok) throw new Error('Simulation failed');
-
-                const data = await response.json();
-                renderResults(data);
-
-                if (welcome) welcome.style.display = 'none';
-                results.classList.add('active');
-
-            } catch (error) {
-                alert('Error running simulation: ' + error.message);
+                if(res.ok) {
+                    const data = await res.json();
+                    displayAiInsights(data.aiCoach);
+                    loadHistory();
+                }
+            } catch (err) {
+                alert("Error submitting log.");
             } finally {
-                loader.style.display = 'none';
+                setBtnLoading('submitBtn', 'loadingOverlay', 'btnText', false);
+                document.getElementById('btnText').innerText = "Sync to Twin";
             }
-        });
+        }
 
-        function renderResults(data) {
-            // Current State
-            const current = data.currentState;
-            document.getElementById('resEnergy').textContent = current.energy.toFixed(1);
-            document.getElementById('resStress').textContent = current.stress.toFixed(1);
-            document.getElementById('resFocus').textContent = current.focus.toFixed(1);
-            document.getElementById('resDebt').textContent = current.recoveryDebt.toFixed(1);
+        async function runSimulation() {
+            const btn = document.getElementById('simBtn');
+            const originalText = btn.innerText;
+            btn.innerText = "Simulating...";
+            btn.disabled = true;
 
-            // Risk
-            document.getElementById('resRiskSummary').textContent = data.riskSummary;
+            const payload = {
+                sleepHours: document.getElementById('simSleep').value,
+                workHours: document.getElementById('simWork').value,
+                stressLevel: document.getElementById('stress').value, // carry over current real stress
+                activityLevel: document.getElementById('activity').value // carry over real activity
+            };
 
-            // Insights
-            const insightsList = document.getElementById('resInsights');
-            insightsList.innerHTML = '';
-            // Insights is a single string, maybe split by sentences if possible, or just display as one item
-            const insightsStr = data.insights || '';
-            if (insightsStr) {
+            try {
+                const res = await fetch('/api/logs/simulate', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+                if(res.ok) {
+                    const data = await res.json();
+                    
+                    // Render simulation on chart
+                    const fakeLogs = data.futureTrajectory.map((t, i) => ({
+                        logDate: `Day +${t.day}`,
+                        calculatedEnergy: t.energy,
+                        stressLevel: t.stress / 10
+                    }));
+                    renderChart(fakeLogs.reverse(), true); // true = isSimulation
+                }
+            } catch (err) {
+                alert("Simulation failed.");
+            } finally {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        function displayAiInsights(aiCoach) {
+            document.getElementById('aiPlaceholder').classList.add('hidden');
+            const content = document.getElementById('aiContent');
+            content.classList.remove('hidden');
+            // trigger reflow
+            void content.offsetWidth;
+            content.classList.remove('opacity-0');
+
+            document.getElementById('aiDecision').innerText = aiCoach.decision;
+            const ul = document.getElementById('aiReasoning');
+            ul.innerHTML = '';
+            aiCoach.reasoning.forEach(r => {
                 const li = document.createElement('li');
-                li.textContent = insightsStr;
-                insightsList.appendChild(li);
-            }
+                li.className = "flex items-start animate-fade-in";
+                li.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-pink-500 mt-2 mr-2 flex-shrink-0"></span><span>${r}</span>`;
+                ul.appendChild(li);
+            });
+        }
 
-            // Trajectory
-            const tbody = document.getElementById('trajectoryBody');
-            tbody.innerHTML = '';
-            data.futureTrajectory.forEach(day => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                <td>Day ${day.day}</td>
-                <td>${day.energy.toFixed(1)}</td>
-                <td>${day.stress.toFixed(1)}</td>
-                <td style="color: ${day.burnoutRisk > 0.7 ? '#ef4444' : '#10b981'}">
-                    ${(day.burnoutRisk * 100).toFixed(0)}%
-                </td>
-            `;
-                tbody.appendChild(tr);
+        async function clearData() {
+            if(!confirm("Erase all Digital Twin data?")) return;
+            try {
+                const res = await fetch('/api/logs', { method: 'DELETE' });
+                if(res.ok) {
+                    resetDashboard();
+                }
+            } catch (err) {
+                console.error('Failed to clear data', err);
+            }
+        }
+
+        function renderChart(logs, isSimulation = false) {
+            const sortedLogs = [...logs].reverse();
+            const labels = sortedLogs.map(l => l.logDate);
+            const energy = sortedLogs.map(l => l.calculatedEnergy);
+            const stress = sortedLogs.map(l => l.stressLevel * 10); 
+
+            const isDark = document.documentElement.classList.contains('dark');
+            const textColor = isDark ? '#94a3b8' : '#64748b'; // slate-400 / slate-500
+            const gridColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
+
+            const ctx = document.getElementById('trendChart').getContext('2d');
+            if(chartInstance) chartInstance.destroy();
+            
+            const gradientEnergy = ctx.createLinearGradient(0, 0, 0, 300);
+            gradientEnergy.addColorStop(0, isSimulation ? 'rgba(139, 92, 246, 0.4)' : 'rgba(59, 130, 246, 0.3)');
+            gradientEnergy.addColorStop(1, 'rgba(0,0,0,0)');
+
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { 
+                            label: isSimulation ? 'Simulated Energy' : 'Energy Capacity', 
+                            data: energy, 
+                            borderColor: isSimulation ? '#8b5cf6' : '#3b82f6', 
+                            backgroundColor: gradientEnergy, 
+                            fill: true, 
+                            tension: 0.4,
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            pointHoverRadius: 6
+                        },
+                        { 
+                            label: isSimulation ? 'Simulated Stress' : 'Stress Load', 
+                            data: stress, 
+                            borderColor: '#f43f5e', 
+                            borderDash: isSimulation ? [5, 5] : [],
+                            backgroundColor: 'transparent', 
+                            fill: false, 
+                            tension: 0.4,
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            pointHoverRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: { 
+                        legend: { 
+                            labels: { color: textColor, font: { family: "'Inter', sans-serif", size: 12 }, usePointStyle: true, boxWidth: 6 },
+                            position: 'top', align: 'end'
+                        },
+                        tooltip: {
+                            backgroundColor: isDark ? 'rgba(15, 23, 42, 0.9)' : 'rgba(255, 255, 255, 0.9)',
+                            titleColor: isDark ? '#fff' : '#000',
+                            bodyColor: isDark ? '#cbd5e1' : '#334155',
+                            borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+                            borderWidth: 1, padding: 12, usePointStyle: true,
+                            titleFont: { family: "'Inter', sans-serif", size: 13 },
+                            bodyFont: { family: "'Inter', sans-serif", size: 12 }
+                        }
+                    },
+                    scales: {
+                        x: { ticks: { color: textColor, font: { family: "'Inter', sans-serif", size: 11 } }, grid: { display: false } },
+                        y: { ticks: { color: textColor, font: { family: "'Inter', sans-serif", size: 11 } }, grid: { color: gridColor }, beginAtZero: true, max: 100 }
+                    }
+                }
             });
         }
     </script>
-
 </body>
-
 </html>
