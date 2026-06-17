@@ -2,12 +2,10 @@
 Agentic Human Digital Twin system that models a person's state, simulates future trajectories, detects risks, and provides explainable insights without making decisions for the user.
 
 
-SAMPLE 1:
+<img width="1280" height="779" alt="image" src="https://github.com/user-attachments/assets/7a18bf13-05b2-41fa-90fc-440906f1637e" />
 
-<img width="512" height="405" alt="image" src="https://github.com/user-attachments/assets/b8348292-ff62-41d9-a5e3-5ce39da6a950" />
+<img width="1280" height="779" alt="image" src="https://github.com/user-attachments/assets/56af4309-45d3-4c6b-8c14-a1b9f3107d2c" />
 
+<img width="1280" height="779" alt="image" src="https://github.com/user-attachments/assets/191db658-dde9-44ab-8051-eed5300deb95" />
 
-
-SAMPLE 2:
-
-<img width="527" height="399" alt="image" src="https://github.com/user-attachments/assets/1bc2c370-5d86-4fbe-a56e-606dbd5dd794" />
+<img width="1280" height="779" alt="image" src="https://github.com/user-attachments/assets/2a3a3bb5-9503-4414-9832-3142305050b3" />
