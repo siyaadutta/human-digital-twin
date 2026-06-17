@@ -1,5 +1,14 @@
 # Compiled class file
 *.class
+target/
+apache-maven-*/
+java-*-openjdk-*/
+models_out.txt
+*.original
+.DS_Store
+.env
+!.env.example
+data/
 
 # Log file
 *.log
